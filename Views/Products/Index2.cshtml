@@ -1,0 +1,40 @@
+﻿@{
+    Layout = "_Layout2";
+}
+
+<p id="text">Hello World</p>
+
+<button id="change">Change Text</button>
+<hr />
+<button onclick="changeimage()">On Bulb</button>
+<img src="~/images/pic_bulboff.gif" id="bulb"/>
+<hr />
+
+
+<h1 class="alert alert-success">This is JQuery 1</h1>
+<h1 class="alert alert-success">This is JQuery 2</h1>
+<h1 class="alert alert-success">This is JQuery 3</h1>
+<h1 class="alert alert-success">This is JQuery 4</h1>
+<h1 class="alert alert-success">This is JQuery 5</h1>
+<h1 class="alert alert-success">This is JQuery 6</h1>
+<h1 class="alert alert-success">This is JQuery 7</h1>
+<h1 class="alert alert-success">This is JQuery 8</h1>
+<h1 class="alert alert-success">This is JQuery 9</h1>
+<h1 class="alert alert-success">This is JQuery 10</h1>
+@section Scripts{
+    <script>
+        function changetext(){
+            document.getElementById("text").innerText = "Pakistan Zindabad";
+        }
+        function changeimage(){
+            document.getElementById("bulb").src = '/images/pic_bulbon.gif';
+        }
+        $("#change").click(function(){
+            $("#text").text("Pakistan Zindabad");
+        });
+
+        $(".alert").click(function(){
+            $(this).fadeOut(1000);
+        });
+    </script>
+}

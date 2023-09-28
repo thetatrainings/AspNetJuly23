@@ -21,7 +21,12 @@
 <h1 class="alert alert-success">This is JQuery 8</h1>
 <h1 class="alert alert-success">This is JQuery 9</h1>
 <h1 class="alert alert-success">This is JQuery 10</h1>
+
+<hr />
+
+<button id="button">show alert</button>
 @section Scripts{
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function changetext(){
             document.getElementById("text").innerText = "Pakistan Zindabad";
@@ -36,5 +41,29 @@
         $(".alert").click(function(){
             $(this).fadeOut(1000);
         });
+    </script>
+
+    <script>
+        $("#button").on("click", function(){
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire(
+                        'Deleted!',
+                        'Your file has been deleted.',
+                        'success'
+                    )
+                }
+            })
+        });
+        
+
     </script>
 }

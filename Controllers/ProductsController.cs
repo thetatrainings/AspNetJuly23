@@ -50,6 +50,7 @@ namespace ThetaEcommerce.Controllers
         // GET: Products/Create
         public IActionResult Create()
         {
+            ViewBag.CatagoryList = _context.Categories.ToList();
             return View();
         }
 

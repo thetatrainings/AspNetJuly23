@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using ThetaEcommerce.DTOs;
 using ThetaEcommerce.Models;
 
 namespace ThetaEcommerce.Controllers
@@ -22,6 +25,10 @@ namespace ThetaEcommerce.Controllers
         // GET: Sellers
         public async Task<IActionResult> Index()
         {
+            if (HttpContext.Session.GetString("Username") == null)
+            {
+                return RedirectToAction(nameof(Login));
+            }
               return _context.Sellers != null ? 
                           View(await _context.Sellers.ToListAsync()) :
                           Problem("Entity set 'theta_ecommerceContext.Sellers'  is null.");
@@ -56,7 +63,7 @@ namespace ThetaEcommerce.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,PhoneNo,Address,Email,SellerId,JoiningDate,CompanyName,SystemUserId,CreatedBy,CreatedDate,ModifiedBy,ModifiedDate,Image,Status")] Seller seller, IFormFile? file)
+        public async Task<IActionResult> Create(LoginsModel loginModel, IFormFile? file)
         {
 
             var ImagePath = "/images/" + Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
@@ -65,8 +72,19 @@ namespace ThetaEcommerce.Controllers
             {
                 file.CopyTo(dd);
             }
+            SystemUser system = new SystemUser();
+            system.UserName = loginModel.UserName;
+            system.Password = loginModel.Password;
+            system.Role = "Seller";
 
+            _context.SystemUsers.Add(system);
+            _context.SaveChanges();
+
+            Seller seller = new Seller();
+            seller.Name = loginModel.Name;
             seller.Image = ImagePath;
+            seller.Address = loginModel.Address;
+            seller.SystemUserId = system.Id;
 
             if (ModelState.IsValid)
             {
@@ -168,6 +186,27 @@ namespace ThetaEcommerce.Controllers
         private bool SellerExists(int id)
         {
           return (_context.Sellers?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+        [HttpGet]
+        public IActionResult Login()
+        {
+            return View();
+        }
+        [HttpPost]
+        public IActionResult Login(LoginsModel logins)
+        {
+            var login = _context.SystemUsers.Where(m => m.UserName == logins.UserName && m.Password == logins.Password).FirstOrDefault();
+            if(login == null)
+            {
+                return View();
+            }
+            HttpContext.Session.SetString("Username", login.UserName);
+            if(login.Role == "Seller")
+            {
+                var sellerModel = _context.Sellers.Where(m => m.SystemUserId == login.Id).FirstOrDefault();
+                HttpContext.Session.SetString("Name", sellerModel.Name);
+            }
+            return RedirectToAction(nameof(Index));
         }
     }
 }

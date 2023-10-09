@@ -71,4 +71,11 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $("#Name").val(localStorage.getItem("Name"));
+        $("#Name").blur(function(){
+            localStorage.setItem("Name", $(this).val());
+        });
+        localStorage.clear();
+    </script>
 }

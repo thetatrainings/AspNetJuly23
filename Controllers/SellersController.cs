@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ThetaEcommerce.DTOs;
 using ThetaEcommerce.Models;
@@ -16,10 +9,14 @@ namespace ThetaEcommerce.Controllers
     {
         private readonly theta_ecommerceContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
-        public SellersController(theta_ecommerceContext context, IWebHostEnvironment webHostEnvironment)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        CookieOptions _options = new CookieOptions();
+        public SellersController(theta_ecommerceContext context, IWebHostEnvironment webHostEnvironment, IHttpContextAccessor httpContextAccessor, CookieOptions options)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _httpContextAccessor = httpContextAccessor;
+            _options = options;
         }
 
         // GET: Sellers
@@ -190,6 +187,12 @@ namespace ThetaEcommerce.Controllers
         [HttpGet]
         public IActionResult Login()
         {
+            var user = Request.Cookies["Username"];
+            //var user = _httpContextAccessor.HttpContext.Request.Cookies["Username"];
+            if (!string.IsNullOrEmpty(user))
+            {
+                return RedirectToAction(nameof(Index));
+            }
             return View();
         }
         [HttpPost]
@@ -201,12 +204,24 @@ namespace ThetaEcommerce.Controllers
                 return View();
             }
             HttpContext.Session.SetString("Username", login.UserName);
+
+            //Cookies add
+            _httpContextAccessor.HttpContext.Response.Cookies.Append("Username", login.UserName);
+            _options.Expires = DateTime.Now.AddDays(2);
+
             if(login.Role == "Seller")
             {
                 var sellerModel = _context.Sellers.Where(m => m.SystemUserId == login.Id).FirstOrDefault();
                 HttpContext.Session.SetString("Name", sellerModel.Name);
             }
             return RedirectToAction(nameof(Index));
+        }
+        [HttpGet]
+        public IActionResult LogOut()
+        {
+            HttpContext.Session.Clear();
+            _httpContextAccessor.HttpContext.Response.Cookies.Delete("Username");
+            return RedirectToAction(nameof(Login));
         }
     }
 }

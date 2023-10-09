@@ -14,7 +14,12 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<theta_ecommerceContext>();
 builder.Services.AddControllersWithViews();
-builder.Services.AddSession();
+builder.Services.AddSession(a =>
+{
+    a.IdleTimeout = TimeSpan.FromMinutes(120);
+});
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

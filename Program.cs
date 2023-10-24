@@ -10,6 +10,8 @@ var connectionString = builder.Configuration.GetConnectionString("CS");
 builder.Services.AddDbContext<theta_ecommerceContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<theta_ecommerceContext>();
@@ -18,8 +20,7 @@ builder.Services.AddSession(a =>
 {
     a.IdleTimeout = TimeSpan.FromMinutes(120);
 });
-builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-builder.Services.AddHttpContextAccessor();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

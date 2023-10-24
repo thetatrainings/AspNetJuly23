@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ThetaEcommerce.Models;
+using ThetaEcommerce.DTOs;
 
 namespace ThetaEcommerce.Controllers
 {
@@ -24,9 +25,22 @@ namespace ThetaEcommerce.Controllers
         // GET: Products
         public async Task<IActionResult> Index()
         {
-              return _context.Products != null ? 
-                          View(await _context.Products.ToListAsync()) :
-                          Problem("Entity set 'theta_ecommerceContext.Products'  is null.");
+            //return _context.Products != null ? 
+            //            View(await _context.Products.ToListAsync()) :
+            //            Problem("Entity set 'theta_ecommerceContext.Products'  is null.");
+            var ProductList = (from product in _context.Products
+                               from cata in _context.Categories.Where(m => m.Id == product.CategoryId)
+                               select new ProductModel
+                               {
+                                   Id = product.Id,
+                                   Name = product.Name,
+                                   CategoryId = cata.Id,
+                                   CategoryName = cata.Name,
+                                   Sku = product.Sku,
+                                   Quantity = product.Quantity,
+                                   Description = product.Description,
+                               }).ToList();
+            return View(ProductList);
         }
 
         // GET: Products/Details/5
@@ -189,6 +203,30 @@ namespace ThetaEcommerce.Controllers
         public IActionResult Index2()
         {
             return View();
+        }
+        public IActionResult Dashboard()
+        {
+            ViewBag.CatagoryList = _context.Categories.ToList();
+            return View();
+        }
+        public string LoadProducts(int Id = 0)
+        {
+            var ProductsString = "";
+            var ProductObject = _context.Products.Where(m => (Id > 0 ? m.CategoryId == Id : true)).Take(4).ToList();
+            ProductsString += "<div class='card-deck'>";
+            foreach (var product in ProductObject)
+            {
+                if(product.Images != null)
+                {
+                    string[] images = product.Images.Split(",");
+                    ProductsString += "<div class='card'><img class='card-img-top' src='" + images[0] + "' alt='Card image cap'><div class='card-body'><h5 class='card-title'>" + product.Name + "</h5><p class='card-text'>" + product.Description + "</p></div></div>";
+                }
+                else
+                {
+                    ProductsString += "<div class='card'><img class='card-img-top' src='' alt='Card image cap'><div class='card-body'><h5 class='card-title'>" + product.Name + "</h5><p class='card-text'>" + product.Description + "</p></div></div>";
+                }
+            }
+            return ProductsString + "</div>";
         }
     }
 }

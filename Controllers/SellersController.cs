@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
+using System.Net.Mail;
 using ThetaEcommerce.DTOs;
 using ThetaEcommerce.Models;
 
@@ -10,13 +12,13 @@ namespace ThetaEcommerce.Controllers
         private readonly theta_ecommerceContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        CookieOptions _options = new CookieOptions();
-        public SellersController(theta_ecommerceContext context, IWebHostEnvironment webHostEnvironment, IHttpContextAccessor httpContextAccessor, CookieOptions options)
+        //CookieOptions _options = new CookieOptions();
+        public SellersController(theta_ecommerceContext context, IWebHostEnvironment webHostEnvironment, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
             _httpContextAccessor = httpContextAccessor;
-            _options = options;
+            //_options = options;
         }
 
         // GET: Sellers
@@ -63,12 +65,12 @@ namespace ThetaEcommerce.Controllers
         public async Task<IActionResult> Create(LoginsModel loginModel, IFormFile? file)
         {
 
-            var ImagePath = "/images/" + Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+            //var ImagePath = "/images/" + Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
 
-            using (FileStream dd = new FileStream(_webHostEnvironment.WebRootPath + ImagePath, FileMode.Create))
-            {
-                file.CopyTo(dd);
-            }
+            //using (FileStream dd = new FileStream(_webHostEnvironment.WebRootPath + ImagePath, FileMode.Create))
+            //{
+            //    file.CopyTo(dd);
+            //}
             SystemUser system = new SystemUser();
             system.UserName = loginModel.UserName;
             system.Password = loginModel.Password;
@@ -77,9 +79,34 @@ namespace ThetaEcommerce.Controllers
             _context.SystemUsers.Add(system);
             _context.SaveChanges();
 
+            if (!string.IsNullOrEmpty(loginModel.Email))
+            {
+                MailMessage mail = new MailMessage();
+                mail.Subject = "Welcome to Theta Solution";
+                mail.Body = "Welcome Dear" + loginModel.Name + "your company name are" + loginModel.CompanyName + "Thanks for joining as";
+                mail.To.Add(loginModel.Email);
+                mail.From = new MailAddress("xyz@gmail.com", "Theta Solutions");
+
+                //SmtpClient client = new SmtpClient();
+                //client.Port = 465;
+                //client.Host = "smtp.gmail.com";
+                //client.Credentials = new NetworkCredential("hhdhdhddd", "hdhdhdhdhdh");
+                //client.EnableSsl = true;
+                //client.Send(mail);
+
+                /// For Mail Trap
+                var client = new SmtpClient("sandbox.smtp.mailtrap.io", 2525)
+                {
+                    Credentials = new NetworkCredential("83145f6b4b6f97", "a83d1b34573635"),
+                    EnableSsl = true
+                };
+                client.Send(mail);
+            }
+
+
             Seller seller = new Seller();
             seller.Name = loginModel.Name;
-            seller.Image = ImagePath;
+            //seller.Image = ImagePath;
             seller.Address = loginModel.Address;
             seller.SystemUserId = system.Id;
 
@@ -207,7 +234,7 @@ namespace ThetaEcommerce.Controllers
 
             //Cookies add
             _httpContextAccessor.HttpContext.Response.Cookies.Append("Username", login.UserName);
-            _options.Expires = DateTime.Now.AddDays(2);
+            //_options.Expires = DateTime.Now.AddDays(2);
 
             if(login.Role == "Seller")
             {

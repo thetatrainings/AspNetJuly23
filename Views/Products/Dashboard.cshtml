@@ -1,0 +1,34 @@
+﻿@{
+    SelectList catagoryList = new SelectList(ViewBag.CatagoryList, "Id", "Name");
+}
+<h1>Dasboard</h1>
+
+@Html.DropDownList("CatagoryId", catagoryList, "Select Catagory")
+@*@Html.DropDownListFor(Model => Model.catagoryId)*@
+<div class="maindiv">
+
+</div>
+@section Scripts{
+    <script>
+        //$(".maindiv").load("LoadProducts");
+        $("#CatagoryId").change(function(){
+
+            $.ajax({
+                url: "LoadProducts",
+                method: "GET",
+                data: {
+                    Id : $(this).val(),
+                },
+                success: function (result) {
+                    $(".maindiv").html(result);
+                },
+                error: function(result){
+
+                }
+            });
+
+
+        });
+
+    </script>
+} 
